@@ -10,6 +10,9 @@ describe('resolveProvider', () => {
         expect(resolveProvider('claude').name).toBe('anthropic');
         expect(resolveProvider('claude-code').name).toBe('claude-cli');
         expect(resolveProvider('openai-compat').name).toBe('openai');
+        expect(resolveProvider('zen').name).toBe('opencode-zen');
+        expect(resolveProvider('go').name).toBe('opencode-go');
+        expect(resolveProvider('OpenCode-Zen').name).toBe('opencode-zen');
     });
 
     it('rejects unknown providers listing the valid ones', () => {
@@ -24,6 +27,8 @@ describe('resolveProvider', () => {
             'openai',
             'anthropic',
             'claude-cli',
+            'opencode-zen',
+            'opencode-go',
         ]);
     });
 });

@@ -69,11 +69,24 @@ Rides an existing `claude` sign-in, so it costs the user's Claude subscription q
 modlens config set provider claude-cli   # make it the default if the user wants
 ```
 
+### opencode-zen / opencode-go (OpenCode gateways, one key)
+
+Both ride an OpenCode account key from https://opencode.ai (sign in, copy the key). Zen is pay-as-you-go with a curated, benchmarked model list; Go is a flat-rate subscription with generous usage limits. Base URLs (`https://opencode.ai/zen/v1`, `https://opencode.ai/zen/go/v1`) and vision-capable default models are built in — Zen defaults to `mimo-v2.5-free` (free tier, vision verified live), Go to `mimo-v2.5` — so only the key needs setting:
+
+```bash
+modlens config set opencode-zen.apiKey <key>
+# or: export OPENCODE_ZEN_API_KEY=<key>   (OPENCODE_GO_API_KEY for the Go route)
+modlens -i shot.png -p opencode-go            # switch providers on the fly
+```
+
+Vision models — defaults verified live (full OCR of a screenshot end to end). Zen: `mimo-v2.5-free` (free tier), `minimax-m2.5`, `minimax-m2.7`, `minimax-m3`, `glm-5.2`, `glm-5.1`, `glm-5`, `kimi-k3`, `kimi-k2.7-code`, `kimi-k2.6`, `kimi-k2.5` (+ free-tier `laguna-s-2.1-free`, `ling-3.0-flash-free`, `north-mini-code-free`, `nemotron-3-ultra-free`). Go: `mimo-v2.5`, `mimo-v2.5-pro`, `mimo-v2-pro`, `mimo-v2-omni`, `grok-4.5`, `glm-5.2`, `glm-5.1`, `glm-5`, `kimi-k3`, `kimi-k2.7-code`, `kimi-k2.6`, `kimi-k2.5`, `hy3`, `hy3-preview`. **Caveat verified live:** on Go the MiniMax/Qwen models strip image input on chat/completions (API: `No endpoints found that support image input`) — no vision there; on Zen they are the paid upgrade path. DeepSeek on these routes is text-only. No server-side schema enforcement; the same tolerant JSON extraction and loud shape validation as the openai route applies.
+
 ## Choosing a provider for the user
 
 - Wants zero setup and free: `antigravity-cli` (needs agy sign-in, 15-40s per image).
 - Wants fast and free: `gemini-api` (three-minute key, 5-10s).
 - Already pays for Claude: `claude-cli` (no extra key) or `anthropic` (API billing).
+- Already pays for OpenCode: `opencode-go` (subscription) or `opencode-zen` (pay-as-you-go).
 - Has a favorite multimodal endpoint (qwen, GLM, ...): `openai`.
 
 ## Troubleshooting

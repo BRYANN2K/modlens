@@ -23,6 +23,35 @@ text-only model in your agent harness ──▶ modlens skill (auto-triggers on 
               structured JSON evidence ──▶ model answers with sight
 ```
 
+## Install this version (opencode-zen / opencode-go)
+
+This branch ships two new vision providers: `opencode-zen` (pay-as-you-go, free-tier model by default) and `opencode-go` (flat-rate subscription). Install straight from the fork, no clone needed:
+
+```bash
+# CLI — auto-builds via the prepare script
+npx -y github:BRYANN2K/modlens#feat/opencode-providers -i shot.png -p opencode-zen
+
+# Skill (agents: Claude Code, Codex, OpenCode, ...)
+npx -y skills add BRYANN2K/modlens
+```
+
+npm < 11 skips dev dependencies on git installs, so the auto-build can fail (`sh: vite: command not found`). Fallback: `npm pack` the repo (builds `dist/`) and `npm install -g <tarball>`.
+
+Set your API key — one OpenCode key from [opencode.ai](https://opencode.ai) covers both providers:
+
+```bash
+modlens config init
+modlens config set opencode-zen.apiKey <your-opencode-key>
+modlens config set opencode-go.apiKey <your-opencode-key>
+# or env vars: export OPENCODE_ZEN_API_KEY=<key>   /   OPENCODE_GO_API_KEY=<key>
+```
+
+Done. The built-in default model is `mimo-v2.5-free` (free tier, verified working with zero credits). Make it the default provider for the skill: `modlens config set provider opencode-zen`, then:
+
+```bash
+modlens -i shot.png -p opencode-zen
+```
+
 ## Quick start
 
 **1. Install Antigravity CLI and sign in** (one-time):
@@ -126,7 +155,7 @@ modlens recover-paste --session <id>  # exact session (skills pass ${CLAUDE_SESS
 
 ## Providers and config
 
-ModLens ships five vision providers. `antigravity-cli` stays the default: zero keys, pure free quota.
+ModLens ships seven vision providers. `antigravity-cli` stays the default: zero keys, pure free quota.
 
 | Provider | Needs | Typical speed | Notes |
 | :-- | :-- | :-- | :-- |
@@ -135,8 +164,10 @@ ModLens ships five vision providers. `antigravity-cli` stays the default: zero k
 | `openai` | baseUrl + apiKey + model | endpoint-dependent | any OpenAI-compatible multimodal endpoint (qwen-vl, GLM, ...) |
 | `anthropic` | `ANTHROPIC_API_KEY` | a few seconds | Claude Haiku by default, schema via forced tool call |
 | `claude-cli` | Claude Code signed in | 20-45s | no key, rides your Claude subscription, Read-only permissions |
+| `opencode-zen` | OpenCode account key | 5-15s | pay-as-you-go gateway, tested/benchmarked models, `mimo-v2.5-free` default (free tier) |
+| `opencode-go` | OpenCode account key | 5-15s | flat-rate subscription, generous limits, `mimo-v2.5` default |
 
-Config lives in `~/.modlens/config.json`. Environment variables override the file (`GEMINI_API_KEY`, `OPENAI_API_KEY`, `OPENAI_BASE_URL`, `ANTHROPIC_API_KEY`), and CLI flags override everything.
+Config lives in `~/.modlens/config.json`. Environment variables override the file (`GEMINI_API_KEY`, `OPENAI_API_KEY`, `OPENAI_BASE_URL`, `ANTHROPIC_API_KEY`, `OPENCODE_ZEN_API_KEY`, `OPENCODE_GO_API_KEY`), and CLI flags override everything.
 
 ```bash
 modlens config init                          # write a starter config
@@ -146,6 +177,22 @@ modlens config set provider gemini-api       # switch the default provider
 ```
 
 The free Gemini key takes three minutes at [aistudio.google.com](https://aistudio.google.com), no credit card. Or skip the manual work entirely and tell your agent: "configure modlens with my Gemini API key".
+
+The [OpenCode](https://opencode.ai) gateways are the paid fast routes: `opencode-zen` is pay-as-you-go with a curated, benchmarked model list, `opencode-go` is a flat-rate subscription with generous usage limits. Both are OpenAI-compatible, so one key from [opencode.ai](https://opencode.ai) is all you need — base URLs and vision-capable default models are built in (`mimo-v2.5-free` on Zen, free tier with working vision; `mimo-v2.5` on Go):
+
+```bash
+modlens config set opencode-zen.apiKey <key>
+modlens config set opencode-go.apiKey <key>
+modlens -i shot.png -p opencode-go                # or -p opencode-zen
+modlens -i shot.png -p opencode-go -m kimi-k3     # pick another vision model
+```
+
+Vision-capable models. **Defaults verified live with ModLens** (full OCR of a screenshot): `mimo-v2.5-free` on Zen and `mimo-v2.5` on Go both read images end to end. Model lists (chat/completions route, `-p opencode-zen` / `-p opencode-go`):
+
+- **Zen:** `mimo-v2.5-free`, `minimax-m2.5`, `minimax-m2.7`, `minimax-m3`, `glm-5.2`, `glm-5.1`, `glm-5`, `kimi-k3`, `kimi-k2.7-code`, `kimi-k2.6`, `kimi-k2.5` — plus free-tier variants `laguna-s-2.1-free`, `ling-3.0-flash-free`, `north-mini-code-free`, `nemotron-3-ultra-free`
+- **Go:** `mimo-v2.5`, `mimo-v2.5-pro`, `mimo-v2-pro`, `mimo-v2-omni`, `grok-4.5`, `glm-5.2`, `glm-5.1`, `glm-5`, `kimi-k3`, `kimi-k2.7-code`, `kimi-k2.6`, `kimi-k2.5`, `hy3`, `hy3-preview`
+
+Caveat, verified live: on Go the MiniMax and Qwen models accept chat/completions requests but **strip image input** (`No endpoints found that support image input`), so they are useless for vision there. On Zen they are the reasonable paid upgrade path. The DeepSeek models on these routes (`deepseek-v4-pro`, `deepseek-v4-flash`) are text-only. Live model lists: `curl https://opencode.ai/zen/go/v1/models` (Zen: `/zen/v1/models`).
 
 ## Using it in Codex (DeepSeek and friends)
 

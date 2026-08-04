@@ -23,6 +23,35 @@ Agent Harness 中的纯文本模型 ──▶ modlens skill（遇到图片自动
            结构化 JSON 证据 ──▶ 模型带着视力回答
 ```
 
+## 安装这个版本（opencode-zen / opencode-go）
+
+这个分支新增了两个视觉 provider：`opencode-zen`（按量付费，默认走免费档模型）和 `opencode-go`（包月订阅）。直接从 fork 装，不用 clone：
+
+```bash
+# CLI —— 自动构建（prepare 脚本），一行命令
+npx -y github:BRYANN2K/modlens#feat/opencode-providers -i shot.png -p opencode-zen
+
+# Skill（Claude Code、Codex、OpenCode 等 agent）
+npx -y skills add BRYANN2K/modlens
+```
+
+npm < 11 在 git 安装时会跳过 devDependencies，自动构建可能失败（`sh: vite: command not found`）。后备方案：`npm pack` 打包仓库（会构建 `dist/`）再 `npm install -g <tarball>`。
+
+配置 API key —— 在 [opencode.ai](https://opencode.ai) 拿一个 key，两个 provider 共用：
+
+```bash
+modlens config init
+modlens config set opencode-zen.apiKey <你的-opencode-key>
+modlens config set opencode-go.apiKey <你的-opencode-key>
+# 或环境变量：export OPENCODE_ZEN_API_KEY=<key>   /   OPENCODE_GO_API_KEY=<key>
+```
+
+搞定。内置默认模型是 `mimo-v2.5-free`（免费档，实测零余额可用）。想让 skill 默认走它：`modlens config set provider opencode-zen`，然后：
+
+```bash
+modlens -i shot.png -p opencode-zen
+```
+
 ## 快速开始
 
 **1. 安装 Antigravity CLI 并登录**（一次性）：
@@ -126,7 +155,7 @@ modlens recover-paste --session <id>  # 精确会话（skill 会传 ${CLAUDE_SES
 
 ## Provider 与配置
 
-ModLens 内置五个视觉 provider，默认还是 `antigravity-cli`：零 key，纯免费额度。
+ModLens 内置七个视觉 provider，默认还是 `antigravity-cli`：零 key，纯免费额度。
 
 | Provider | 需要什么 | 速度 | 说明 |
 | :-- | :-- | :-- | :-- |
@@ -135,8 +164,10 @@ ModLens 内置五个视觉 provider，默认还是 `antigravity-cli`：零 key�
 | `openai` | baseUrl + apiKey + model | 看端点 | 任何 OpenAI 兼容的多模态端点（qwen-vl、GLM 等） |
 | `anthropic` | `ANTHROPIC_API_KEY` | 几秒 | 默认 Claude Haiku，强制工具调用保 schema |
 | `claude-cli` | Claude Code 已登录 | 20-45 秒 | 零 key，吃你的 Claude 订阅额度，只放行 Read 工具 |
+| `opencode-zen` | OpenCode 账号 key | 5-15 秒 | 按量付费网关，模型经过测试和基准验证，默认 `mimo-v2.5-free`（免费档） |
+| `opencode-go` | OpenCode 账号 key | 5-15 秒 | 包月订阅，额度慷慨，默认 `mimo-v2.5` |
 
-配置放在 `~/.modlens/config.json`，环境变量能盖过它（`GEMINI_API_KEY`、`OPENAI_API_KEY`、`OPENAI_BASE_URL`、`ANTHROPIC_API_KEY`），CLI 参数最大。
+配置放在 `~/.modlens/config.json`，环境变量能盖过它（`GEMINI_API_KEY`、`OPENAI_API_KEY`、`OPENAI_BASE_URL`、`ANTHROPIC_API_KEY`、`OPENCODE_ZEN_API_KEY`、`OPENCODE_GO_API_KEY`），CLI 参数最大。
 
 ```bash
 modlens config init                          # 生成配置骨架
@@ -146,6 +177,22 @@ modlens config set provider gemini-api       # 换默认 provider
 ```
 
 免费 Gemini key 去 [aistudio.google.com](https://aistudio.google.com) 领，三分钟，不要信用卡。嫌麻烦就直接跟你的 agent 说一句「帮我把 Gemini key 配进 modlens」，让它自己跑命令。
+
+[OpenCode](https://opencode.ai) 网关是付费快线：`opencode-zen` 按量付费、模型经过测试和基准验证；`opencode-go` 包月订阅、额度慷慨。两者都兼容 OpenAI 协议，在 [opencode.ai](https://opencode.ai) 拿一个 key 就够——base URL 和带视觉的默认模型都内置了（Zen 默认 `mimo-v2.5-free`，免费档且视觉可用；Go 默认 `mimo-v2.5`）：
+
+```bash
+modlens config set opencode-zen.apiKey <key>
+modlens config set opencode-go.apiKey <key>
+modlens -i shot.png -p opencode-go                # 或 -p opencode-zen
+modlens -i shot.png -p opencode-go -m kimi-k3     # 换别的视觉模型
+```
+
+带视觉的模型。**默认值已经用 ModLens 实测过**（完整 OCR 了一张截图）：Zen 的 `mimo-v2.5-free` 和 Go 的 `mimo-v2.5` 都能端到端读图。模型列表（chat/completions 路由，用 `-p opencode-zen` / `-p opencode-go`）：
+
+- **Zen**：`mimo-v2.5-free`、`minimax-m2.5`、`minimax-m2.7`、`minimax-m3`、`glm-5.2`、`glm-5.1`、`glm-5`、`kimi-k3`、`kimi-k2.7-code`、`kimi-k2.6`、`kimi-k2.5`——另有免费档变体 `laguna-s-2.1-free`、`ling-3.0-flash-free`、`north-mini-code-free`、`nemotron-3-ultra-free`
+- **Go**：`mimo-v2.5`、`mimo-v2.5-pro`、`mimo-v2-pro`、`mimo-v2-omni`、`grok-4.5`、`glm-5.2`、`glm-5.1`、`glm-5`、`kimi-k3`、`kimi-k2.7-code`、`kimi-k2.6`、`kimi-k2.5`、`hy3`、`hy3-preview`
+
+实测警告：Go 上的 MiniMax 和 Qwen 模型接受 chat/completions 请求但会**剥掉图片输入**（`No endpoints found that support image input`），在那上面做不了视觉。Zen 上它们才是合理的付费升级路线。同一路线上的 DeepSeek 模型（`deepseek-v4-pro`、`deepseek-v4-flash`）是纯文本的。实时模型列表：`curl https://opencode.ai/zen/go/v1/models`（Zen 是 `/zen/v1/models`）。
 
 ## 在 Codex 里用（DeepSeek 等纯文本模型）
 

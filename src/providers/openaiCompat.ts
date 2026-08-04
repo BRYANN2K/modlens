@@ -10,16 +10,33 @@ import type {
     VisionProvider,
 } from './index.ts';
 
+export interface OpenaiCompatMeta {
+    /** Provider name used in error hints (e.g. 'opencode-zen'). */
+    label?: string;
+    /** Env var names to suggest when settings are missing. */
+    envHint?: string;
+    /** Built-in base URL used when none is configured (first-class gateways). */
+    defaultBaseUrl?: string;
+    /** Built-in model used when neither CLI flag nor settings provide one. */
+    defaultModel?: string;
+}
+
 export async function executeOpenaiCompat(
     options: BuildProviderInvocationOptions,
+    meta?: OpenaiCompatMeta,
 ): Promise<ProviderParsedOutput> {
     const apiKey = options.settings?.apiKey;
-    const baseUrl = options.settings?.baseUrl?.replace(/\/$/, '');
-    const model = options.model || options.settings?.model;
+    const baseUrl =
+        options.settings?.baseUrl?.replace(/\/$/, '') || meta?.defaultBaseUrl?.replace(/\/$/, '');
+    const model = options.model || options.settings?.model || meta?.defaultModel;
 
     if (!apiKey || !baseUrl || !model) {
         throw new Error(
-            'openai provider needs baseUrl, apiKey, and model. Set OPENAI_BASE_URL and OPENAI_API_KEY, or run: modlens config set openai.baseUrl <url> / openai.apiKey <key> / openai.model <name>',
+            `${meta?.label ?? 'openai'} provider needs baseUrl, apiKey, and model. Set ${
+                meta?.envHint ?? 'OPENAI_BASE_URL and OPENAI_API_KEY'
+            }, or run: modlens config set ${meta?.label ?? 'openai'}.baseUrl <url> / ${
+                meta?.label ?? 'openai'
+            }.apiKey <key> / ${meta?.label ?? 'openai'}.model <name>`,
         );
     }
 
