@@ -3,6 +3,7 @@ import { antigravityCliProvider } from './antigravity.ts';
 import { anthropicApiProvider } from './anthropicApi.ts';
 import { claudeCliProvider } from './claudeCli.ts';
 import { geminiApiProvider } from './geminiApi.ts';
+import { opencodeGoProvider, opencodeZenProvider } from './opencode.ts';
 import { openaiCompatProvider } from './openaiCompat.ts';
 
 export interface ProviderInvocation {
@@ -53,6 +54,10 @@ const PROVIDERS: Record<string, VisionProvider> = {
     claude: anthropicApiProvider,
     'claude-cli': claudeCliProvider,
     'claude-code': claudeCliProvider,
+    'opencode-zen': opencodeZenProvider,
+    zen: opencodeZenProvider,
+    'opencode-go': opencodeGoProvider,
+    go: opencodeGoProvider,
 };
 
 export function resolveProvider(providerName = 'antigravity-cli'): VisionProvider {

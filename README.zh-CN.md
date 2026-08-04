@@ -126,7 +126,7 @@ modlens recover-paste --session <id>  # 精确会话（skill 会传 ${CLAUDE_SES
 
 ## Provider 与配置
 
-ModLens 内置五个视觉 provider，默认还是 `antigravity-cli`：零 key，纯免费额度。
+ModLens 内置七个视觉 provider，默认还是 `antigravity-cli`：零 key，纯免费额度。
 
 | Provider | 需要什么 | 速度 | 说明 |
 | :-- | :-- | :-- | :-- |
@@ -135,8 +135,10 @@ ModLens 内置五个视觉 provider，默认还是 `antigravity-cli`：零 key�
 | `openai` | baseUrl + apiKey + model | 看端点 | 任何 OpenAI 兼容的多模态端点（qwen-vl、GLM 等） |
 | `anthropic` | `ANTHROPIC_API_KEY` | 几秒 | 默认 Claude Haiku，强制工具调用保 schema |
 | `claude-cli` | Claude Code 已登录 | 20-45 秒 | 零 key，吃你的 Claude 订阅额度，只放行 Read 工具 |
+| `opencode-zen` | OpenCode 账号 key | 5-15 秒 | 按量付费网关，模型经过测试和基准验证，默认 `minimax-m2.5` |
+| `opencode-go` | OpenCode 账号 key | 5-15 秒 | 包月订阅，额度慷慨，默认 `minimax-m2.5` |
 
-配置放在 `~/.modlens/config.json`，环境变量能盖过它（`GEMINI_API_KEY`、`OPENAI_API_KEY`、`OPENAI_BASE_URL`、`ANTHROPIC_API_KEY`），CLI 参数最大。
+配置放在 `~/.modlens/config.json`，环境变量能盖过它（`GEMINI_API_KEY`、`OPENAI_API_KEY`、`OPENAI_BASE_URL`、`ANTHROPIC_API_KEY`、`OPENCODE_ZEN_API_KEY`、`OPENCODE_GO_API_KEY`），CLI 参数最大。
 
 ```bash
 modlens config init                          # 生成配置骨架
@@ -146,6 +148,22 @@ modlens config set provider gemini-api       # 换默认 provider
 ```
 
 免费 Gemini key 去 [aistudio.google.com](https://aistudio.google.com) 领，三分钟，不要信用卡。嫌麻烦就直接跟你的 agent 说一句「帮我把 Gemini key 配进 modlens」，让它自己跑命令。
+
+[OpenCode](https://opencode.ai) 网关是付费快线：`opencode-zen` 按量付费、模型经过测试和基准验证；`opencode-go` 包月订阅、额度慷慨。两者都兼容 OpenAI 协议，在 [opencode.ai](https://opencode.ai) 拿一个 key 就够——base URL 和便宜且带视觉的默认模型（`minimax-m2.5`）都内置了：
+
+```bash
+modlens config set opencode-zen.apiKey <key>
+modlens config set opencode-go.apiKey <key>
+modlens -i shot.png -p opencode-go                # 或 -p opencode-zen
+modlens -i shot.png -p opencode-go -m kimi-k3     # 换别的视觉模型
+```
+
+带视觉的模型。两个网关都在 OpenAI 兼容的 chat/completions 路线上服务（用 `-p opencode-zen` / `-p opencode-go`）：
+
+- **Zen**：`minimax-m2.5`、`minimax-m2.7`、`minimax-m3`、`glm-5.2`、`glm-5.1`、`glm-5`、`kimi-k3`、`kimi-k2.7-code`、`kimi-k2.6`、`kimi-k2.5`——另有免费档变体 `mimo-v2.5-free`、`laguna-s-2.1-free`、`ling-3.0-flash-free`、`north-mini-code-free`、`nemotron-3-ultra-free`
+- **Go**：`grok-4.5`、`gpt-5.6-luna`、`glm-5.2`、`glm-5.1`、`glm-5`、`kimi-k3`、`kimi-k2.7-code`、`kimi-k2.6`、`kimi-k2.5`、`mimo-v2.5`、`mimo-v2.5-pro`、`mimo-v2-pro`、`mimo-v2-omni`、`hy3`、`hy3-preview`、`minimax-m3`、`minimax-m2.7`、`minimax-m2.5`、`qwen3.8-max`、`qwen3.7-max`、`qwen3.7-plus`、`qwen3.6-plus`、`qwen3.5-plus`
+
+OpenCode 文档把 MiniMax/Qwen 模型列在 `/messages`（Anthropic SDK）路由下，但网关在 chat/completions 上也接受它们——不需要 Anthropic 端点。同一路线上的 DeepSeek 模型（`deepseek-v4-pro`、`deepseek-v4-flash`）是纯文本的——ModLens 也救不了。实时模型列表随时可查：`curl https://opencode.ai/zen/go/v1/models`（Zen 是 `/zen/v1/models`）。
 
 ## 在 Codex 里用（DeepSeek 等纯文本模型）
 

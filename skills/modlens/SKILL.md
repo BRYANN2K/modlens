@@ -27,7 +27,7 @@ modlens --version
 
 If `modlens` is missing, run it via `npx @liustack/modlens` instead.
 
-ModLens supports five vision providers. Check what is configured:
+ModLens supports seven vision providers. Check what is configured:
 
 ```bash
 modlens config show
@@ -38,6 +38,7 @@ modlens config show
 - **openai**: any OpenAI-compatible multimodal endpoint; needs baseUrl + apiKey + model via env (`OPENAI_BASE_URL`, `OPENAI_API_KEY`) or `modlens config set openai.<field> <value>`.
 - **anthropic**: needs `ANTHROPIC_API_KEY` env or config; defaults to Claude Haiku.
 - **claude-cli**: rides an existing Claude Code login (`claude`), no key, Read-only tool permissions, local files only.
+- **opencode-zen** / **opencode-go**: OpenCode gateways, one key from https://opencode.ai covers both; base URLs and a cheap vision-capable default model (`minimax-m2.5`) are built in, only the apiKey needs setting (`OPENCODE_ZEN_API_KEY` / `OPENCODE_GO_API_KEY` env or `modlens config set opencode-zen.apiKey <key>`).
 
 `modlens config init` writes a starter config to `~/.modlens/config.json` when none exists. Full setup recipes per provider: `references/configure.md`.
 

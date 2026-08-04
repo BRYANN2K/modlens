@@ -22,6 +22,8 @@ const ENV_BINDINGS: Record<string, Partial<Record<keyof ProviderSettings, string
     'gemini-api': { apiKey: 'GEMINI_API_KEY' },
     openai: { apiKey: 'OPENAI_API_KEY', baseUrl: 'OPENAI_BASE_URL' },
     anthropic: { apiKey: 'ANTHROPIC_API_KEY', baseUrl: 'ANTHROPIC_BASE_URL' },
+    'opencode-zen': { apiKey: 'OPENCODE_ZEN_API_KEY', baseUrl: 'OPENCODE_ZEN_BASE_URL' },
+    'opencode-go': { apiKey: 'OPENCODE_GO_API_KEY', baseUrl: 'OPENCODE_GO_BASE_URL' },
 };
 
 export function loadConfigFile(configPath = CONFIG_PATH): ModlensConfig {
@@ -110,6 +112,8 @@ export const CONFIG_TEMPLATE: ModlensConfig = {
         openai: { baseUrl: '', apiKey: '', model: '' },
         anthropic: { apiKey: '', model: 'claude-haiku-4-5-20251001' },
         'claude-cli': { model: 'haiku' },
+        'opencode-zen': { baseUrl: 'https://opencode.ai/zen/v1', apiKey: '', model: 'minimax-m2.5' },
+        'opencode-go': { baseUrl: 'https://opencode.ai/zen/go/v1', apiKey: '', model: 'minimax-m2.5' },
     },
 };
 

@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.8.0 - 2026-08-04
+
+- New providers: `opencode-zen` (pay-as-you-go) and `opencode-go` (flat-rate subscription), both riding one OpenCode account key. OpenAI-compatible chat/completions routes with built-in base URLs and a cheap, vision-capable default model (`minimax-m2.5`); only the apiKey needs setting. Env overrides: `OPENCODE_ZEN_API_KEY`, `OPENCODE_GO_API_KEY`, `OPENCODE_ZEN_BASE_URL`, `OPENCODE_GO_BASE_URL`. Aliases `zen` and `go`. The openai route engine gained optional built-in defaults (label/envHint/baseUrl/model) so first-class gateways work with zero config beyond the key.
+
 ## 2.7.1 - 2026-08-04
 
 - Docs: per-harness skill discovery paths (`~/.claude/skills/`, `~/.codex/skills/`, `~/.agents/skills/` for Pi and OpenCode), OpenCode + DeepSeek setup recipe, and the four-harness live verification matrix (Claude Code session-id recovery, OpenCode full skill loop on DeepSeek, Pi store isolation, Codex refusal).

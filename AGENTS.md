@@ -6,9 +6,9 @@ Provide the `modlens` CLI tool that converts image sources (local path or remote
 
 ## Technical Approach
 
-- **Five vision providers behind one interface** (`src/providers/index.ts`). Subprocess providers implement `buildInvocation` + `parseOutput` (antigravity-cli, claude-cli); in-process API providers implement `execute` (gemini-api, openai, anthropic). `antigravity-cli` is the zero-config default.
+- **Seven vision providers behind one interface** (`src/providers/index.ts`). Subprocess providers implement `buildInvocation` + `parseOutput` (antigravity-cli, claude-cli); in-process API providers implement `execute` (gemini-api, openai, anthropic, opencode-zen, opencode-go). `antigravity-cli` is the zero-config default.
 - **Schema-enforced JSON output** wherever the backend allows: `--json-schema` on the two CLIs, `responseJsonSchema` on gemini-api, a forced tool call on anthropic. The openai route uses a template-instance prompt (weak gateways echo raw schemas back) plus shape validation that fails loudly.
-- **Layered config**: CLI flags > env vars (`GEMINI_API_KEY`, `OPENAI_API_KEY`, `OPENAI_BASE_URL`, `ANTHROPIC_API_KEY`) > `~/.modlens/config.json` (managed by `modlens config init/set/show`, 0600, masked rendering) > built-ins.
+- **Layered config**: CLI flags > env vars (`GEMINI_API_KEY`, `OPENAI_API_KEY`, `OPENAI_BASE_URL`, `ANTHROPIC_API_KEY`, `OPENCODE_ZEN_API_KEY`, `OPENCODE_GO_API_KEY`) > `~/.modlens/config.json` (managed by `modlens config init/set/show`, 0600, masked rendering) > built-ins.
 - **Claude Code paste recovery**: `modlens recover-paste` pulls pasted image bytes out of `~/.claude/projects/<cwd-slug>/<session>.jsonl` (pastes never hit a regular temp file). Exact targeting via `--session`, else newest-image-timestamp scanning. Transcript layout is Claude Code internals; treat as best-effort.
 - **Single responsibility**: visual parsing only. Web search and page fetching live in `modsearch`.
 
@@ -28,11 +28,12 @@ src/
 ├── imageInput.ts     # base64/mime helpers + tolerant JSON extraction
 ├── recoverPaste.ts   # Claude Code transcript image recovery
 └── providers/
-    ├── index.ts        # provider interface + registry (5 providers + aliases)
+    ├── index.ts        # provider interface + registry (7 providers + aliases)
     ├── antigravity.ts  # agy subprocess provider
     ├── claudeCli.ts    # claude subprocess provider (Read-only tools)
     ├── geminiApi.ts    # Gemini Developer API
     ├── openaiCompat.ts # any OpenAI-compatible multimodal endpoint
+    ├── opencode.ts     # OpenCode Zen / Go gateway providers (openai-compatible)
     └── anthropicApi.ts # Claude API (forced tool call)
 ```
 

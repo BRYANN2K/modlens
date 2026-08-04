@@ -126,7 +126,7 @@ modlens recover-paste --session <id>  # exact session (skills pass ${CLAUDE_SESS
 
 ## Providers and config
 
-ModLens ships five vision providers. `antigravity-cli` stays the default: zero keys, pure free quota.
+ModLens ships seven vision providers. `antigravity-cli` stays the default: zero keys, pure free quota.
 
 | Provider | Needs | Typical speed | Notes |
 | :-- | :-- | :-- | :-- |
@@ -135,8 +135,10 @@ ModLens ships five vision providers. `antigravity-cli` stays the default: zero k
 | `openai` | baseUrl + apiKey + model | endpoint-dependent | any OpenAI-compatible multimodal endpoint (qwen-vl, GLM, ...) |
 | `anthropic` | `ANTHROPIC_API_KEY` | a few seconds | Claude Haiku by default, schema via forced tool call |
 | `claude-cli` | Claude Code signed in | 20-45s | no key, rides your Claude subscription, Read-only permissions |
+| `opencode-zen` | OpenCode account key | 5-15s | pay-as-you-go gateway, tested/benchmarked models, `minimax-m2.5` default |
+| `opencode-go` | OpenCode account key | 5-15s | flat-rate subscription, generous limits, `minimax-m2.5` default |
 
-Config lives in `~/.modlens/config.json`. Environment variables override the file (`GEMINI_API_KEY`, `OPENAI_API_KEY`, `OPENAI_BASE_URL`, `ANTHROPIC_API_KEY`), and CLI flags override everything.
+Config lives in `~/.modlens/config.json`. Environment variables override the file (`GEMINI_API_KEY`, `OPENAI_API_KEY`, `OPENAI_BASE_URL`, `ANTHROPIC_API_KEY`, `OPENCODE_ZEN_API_KEY`, `OPENCODE_GO_API_KEY`), and CLI flags override everything.
 
 ```bash
 modlens config init                          # write a starter config
@@ -146,6 +148,22 @@ modlens config set provider gemini-api       # switch the default provider
 ```
 
 The free Gemini key takes three minutes at [aistudio.google.com](https://aistudio.google.com), no credit card. Or skip the manual work entirely and tell your agent: "configure modlens with my Gemini API key".
+
+The [OpenCode](https://opencode.ai) gateways are the paid fast routes: `opencode-zen` is pay-as-you-go with a curated, benchmarked model list, `opencode-go` is a flat-rate subscription with generous usage limits. Both are OpenAI-compatible, so one key from [opencode.ai](https://opencode.ai) is all you need — base URLs and a cheap, vision-capable default model (`minimax-m2.5`) are built in on both:
+
+```bash
+modlens config set opencode-zen.apiKey <key>
+modlens config set opencode-go.apiKey <key>
+modlens -i shot.png -p opencode-go                # or -p opencode-zen
+modlens -i shot.png -p opencode-go -m kimi-k3     # pick another vision model
+```
+
+Vision-capable models. Both gateways serve them all on the OpenAI-compatible chat/completions route (use `-p opencode-zen` / `-p opencode-go`):
+
+- **Zen:** `minimax-m2.5`, `minimax-m2.7`, `minimax-m3`, `glm-5.2`, `glm-5.1`, `glm-5`, `kimi-k3`, `kimi-k2.7-code`, `kimi-k2.6`, `kimi-k2.5` — plus the free-tier variants `mimo-v2.5-free`, `laguna-s-2.1-free`, `ling-3.0-flash-free`, `north-mini-code-free`, `nemotron-3-ultra-free`
+- **Go:** `grok-4.5`, `gpt-5.6-luna`, `glm-5.2`, `glm-5.1`, `glm-5`, `kimi-k3`, `kimi-k2.7-code`, `kimi-k2.6`, `kimi-k2.5`, `mimo-v2.5`, `mimo-v2.5-pro`, `mimo-v2-pro`, `mimo-v2-omni`, `hy3`, `hy3-preview`, `minimax-m3`, `minimax-m2.7`, `minimax-m2.5`, `qwen3.8-max`, `qwen3.7-max`, `qwen3.7-plus`, `qwen3.6-plus`, `qwen3.5-plus`
+
+The OpenCode docs list the MiniMax/Qwen models under a `/messages` (Anthropic SDK) route, but the gateways accept them on chat/completions too — no Anthropic endpoint needed. The DeepSeek models on these routes (`deepseek-v4-pro`, `deepseek-v4-flash`) are text-only — ModLens will not fix that for you. The live model list is always fetchable: `curl https://opencode.ai/zen/go/v1/models` (Zen: `/zen/v1/models`).
 
 ## Using it in Codex (DeepSeek and friends)
 

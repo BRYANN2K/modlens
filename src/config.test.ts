@@ -41,6 +41,21 @@ describe('resolveProviderSettings', () => {
         });
         expect(settings.baseUrl).toBe('https://gw.example.com/v1');
     });
+
+    it('binds opencode-zen and opencode-go keys and base urls from env', () => {
+        const zen = resolveProviderSettings('opencode-zen', {}, {
+            OPENCODE_ZEN_API_KEY: 'zen-key',
+            OPENCODE_ZEN_BASE_URL: 'https://zen.example.com/v1',
+        });
+        expect(zen.apiKey).toBe('zen-key');
+        expect(zen.baseUrl).toBe('https://zen.example.com/v1');
+
+        const go = resolveProviderSettings('opencode-go', {}, {
+            OPENCODE_GO_API_KEY: 'go-key',
+        });
+        expect(go.apiKey).toBe('go-key');
+        expect(go.baseUrl).toBeUndefined();
+    });
 });
 
 describe('setConfigValue + loadConfigFile + renderConfig', () => {
